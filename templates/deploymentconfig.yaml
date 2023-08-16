@@ -1,75 +1,36 @@
-apiVersion: v1
+apiVersion: apps.openshift.io/v1
 kind: DeploymentConfig
 metadata:
-  annotations:
-    description: Defines how to deploy the application server
-  labels:
-    component: {{ .Values.component_name }}
-    template: {{ .Values.component_name }}
-  name: {{ .Values.component_name }}
+  name: {{ .Values.component.name }}-mydeployment
 spec:
   replicas: {{ .Values.num_replicas }}
   selector:
-    name: {{ .Values.component_name }}
-  strategy:
-    resources:
-      limits:
-        cpu: 250m
-        memory: 512Mi
-      requests:
-        cpu: 100m
-        memory: 128Mi
-    type: Rolling
+    app: {{ .Values.component.name }}
   template:
     metadata:
       labels:
-        name: {{ .Values.component_name }}
-      name: {{ .Values.component_name }}
+        app: {{ .Values.component.name }}
     spec:
       containers:
-      - env:
-        - name: JAVA_APP_JAR
-          value: tss-tfcsDueDateOverride-1.0.2-SNAPSHOT.jar
-        - name: TFCS-DUEDATE-OVERRIDE-SOURCE-URI
-          valueFrom:
-            configMapKeyRef:
-              key: tfcsDueDateOverride.source.uri
-              name: appenvironment-configmap
-        - name: TSIS-FORECAST-TFCS-URL
-          valueFrom:
-            configMapKeyRef:
-              key: tssForecast.tfcs.url
-              name: appenvironment-configmap
-        - name: TSIS-FORECAST-TFCS-USER
-          valueFrom:
-            secretKeyRef:
-              key: tssForecast.tfcs.user
-              name: tsissecret
-        - name: TSIS-FORECAST-TFCS-PASSWORD
-          valueFrom:
-            secretKeyRef:
-              key: tssForecast.tfcs.password
-              name: tsissecret
-        image: {{ .Values.component_image }}
-        imagePullPolicy: Always
-        livenessProbe:
-          initialDelaySeconds: {{ .Values.liveness_delay }}
-          tcpSocket:
-            port: 8080
-        name: {{ .Values.component_name }}
-        ports:
-        - containerPort: 8080
-        readinessProbe:
-          initialDelaySeconds: {{ .Values.readiness_delay }}
-          tcpSocket:
-            port: 8080
-        resources:
-          limits:
-            cpu: {{ .Values.deploy_cpu_limit }}
-            memory: {{ .Values.deploy_mem_limit }}
-          requests:
-            cpu: {{ .Values.deploy_cpu_request }}
-            memory: {{ .Values.deploy_mem_request }}
-      imagePullSecrets:
-      - name: jfrog
-  triggers: []
+        - name: {{ .Values.component.name }}-container
+          image: {{ .Values.component.image }}:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: {{ .Values.deploy.resources.limits.cpu }}
+              memory: {{ .Values.deploy.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.deploy.resources.requests.cpu }}
+              memory: {{ .Values.deploy.resources.requests.memory }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: {{ .Values.liveness_delay }}
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: 8080
+            initialDelaySeconds: {{ .Values.readiness_delay }}
+
