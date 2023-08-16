@@ -1,0 +1,3 @@
+name: tss-tfcsduedateoverride-template
+tags: ups,java,java8,maven,fat-jar,uber-jar,s2i,openjdk
+version: v0.0.1

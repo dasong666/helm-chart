@@ -1,0 +1,18 @@
+base_image: jfrog-docker.inside.ups.com/docker_redhat_registry/ubi8/openjdk-17
+base_image_tag: 1.15-1.1682053058
+build_cpu_limit: 400m
+build_cpu_request: 100m
+build_mem_limit: 1200Mi
+build_mem_request: 1200Mi
+component_image: jfrog-docker.inside.ups.com/aff_tsis_docker_local_dev/tss-tfcsduedateoverride:latest
+component_name: tss-tfcsduedateoverride
+context_dir: '# TODO: must define a default value for .context_dir'
+deploy_cpu_limit: 500m
+deploy_cpu_request: 100m
+deploy_mem_limit: 512Mi
+deploy_mem_request: 256Mi
+liveness_delay: "90"
+num_replicas: "1"
+readiness_delay: "90"
+source_repository_ref: Story_openshift
+source_repository_url: https://tfs.ups.com/tfs/upsprod/P07AGit_TSIS/_git/tss_tfcsDueDateOverride
