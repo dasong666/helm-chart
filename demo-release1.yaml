@@ -1,0 +1,79 @@
+---
+# Source: tss-tfcsduedateoverride-ocp/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: tss-tfcsduedateoverride-service
+spec:
+  selector:
+    app: tss-tfcsduedateoverride
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+---
+# Source: tss-tfcsduedateoverride-ocp/templates/buildconfig.yaml
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: tss-tfcsduedateoverride-mybuild
+spec:
+  source:
+    git:
+      uri: https://tfs.ups.com/tfs/upsprod/P07AGit_TSIS/_git/tss_tfcsDueDateOverride
+      ref: Story_openshift
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: DockerImage
+        name: jfrog-docker.inside.ups.com/docker_redhat_registry/ubi8/openjdk-17:1.15-1.1682053058
+  output:
+    to:
+      kind: ImageStreamTag
+      name: tss-tfcsduedateoverride:latest
+
+  resources:
+    limits:
+      cpu: 400m
+      memory: 1200Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+---
+# Source: tss-tfcsduedateoverride-ocp/templates/deploymentconfig.yaml
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name: tss-tfcsduedateoverride-mydeployment
+spec:
+  replicas: 1
+  selector:
+    app: tss-tfcsduedateoverride
+  template:
+    metadata:
+      labels:
+        app: tss-tfcsduedateoverride
+    spec:
+      containers:
+        - name: tss-tfcsduedateoverride-container
+          image: jfrog-docker.inside.ups.com/aff_tsis_docker_local_dev/tss-tfcsduedateoverride:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 90
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: 8080
+            initialDelaySeconds: 90

@@ -16,7 +16,7 @@ spec:
   output:
     to:
       kind: ImageStreamTag
-      name: tss-tfcsduedateoverride:latest
+      name: {{ .Values.component.name }}:latest
 
   resources:
     limits:
